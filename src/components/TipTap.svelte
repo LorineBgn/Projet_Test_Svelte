@@ -3,21 +3,42 @@
 
   import StarterKit from "@tiptap/starter-kit";
   import { Editor } from "@tiptap/core";
-  import { onMount } from "svelte";
+  import { onMount, onDestroy } from "svelte";
+  import { supabase } from "../lib/Supabase.js";
 
   let element;
   let editor;
 
+  // Abonnement realtime
+  const channel = supabase.channel("doc1");
+
+  // Écoute les changements venant d'autres utilisateurs
+  channel
+    .on("broadcast", { event: "update" }, ({ payload }) => {
+      if (editor) {
+        editor.commands.setContent(payload.content);
+      }
+    })
+    .subscribe();
+
   onMount(() => {
     editor = new Editor({
-      element: element,
+      element,
       extensions: [StarterKit],
-      content: ``,
-      onTransaction: () => {
-        // force re-render so `editor.isActive` works as expected
-        editor = editor;
+      content: "",
+      onUpdate: ({ editor }) => {
+        const html = editor.getHTML();
+        channel.send({
+          type: "broadcast",
+          event: "update",
+          payload: { content: html },
+        });
       },
     });
+  });
+
+  onDestroy(() => {
+    editor?.destroy();
   });
 </script>
 
