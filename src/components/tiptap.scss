@@ -1,4 +1,20 @@
-/* Basic editor styles */
+.doc-page .ProseMirror {
+  min-height: 400px;
+  padding: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #fff;
+  font-family: 'Arial', sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  outline: none;
+}
+
+.doc-page .ProseMirror:focus {
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 2px rgba(74,144,226,0.2);
+}
+
 .tiptap {
   :first-child {
     margin-top: 0;

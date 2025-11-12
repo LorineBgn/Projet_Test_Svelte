@@ -2,45 +2,74 @@
   import "./tiptap.scss";
 
   import StarterKit from "@tiptap/starter-kit";
+  import Collaboration from "@tiptap/extension-collaboration";
+  import Placeholder from "@tiptap/extension-placeholder";
   import { Editor } from "@tiptap/core";
   import { onMount, onDestroy } from "svelte";
+  import { EditorContent } from "svelte-tiptap";
+
+  import * as Y from "yjs";
   import { supabase } from "../lib/Supabase.js";
+
+  function createProvider(supabase, roomName, ydoc) {
+    // Abonnement realtime
+    const channel = supabase.channel(roomName);
+
+    // Réception d'un update du canal + Application à la page
+    channel.on("broadcast", { event: "update" }, ({ payload }) => {
+      const update = new Uint8Array(payload.update);
+      Y.applyUpdate(ydoc, update);
+    });
+
+    // Le doc change localement + Broadcast l'update
+    ydoc.on("update", (update) => {
+      channel.send({
+        type: "broadcast",
+        event: "update",
+        payload: { update: Array.from(update) },
+      });
+    });
+
+    // Abonnement Realtime
+    channel.subscribe((status) => console.log("Supabase channel:", status));
+
+    return { channel };
+  }
 
   let element;
   let editor;
-
-  // Abonnement realtime
-  const channel = supabase.channel("doc1");
-
-  // Écoute les changements venant d'autres utilisateurs
-  channel
-    .on("broadcast", { event: "update" }, ({ payload }) => {
-      if (editor) {
-        editor.commands.setContent(payload.content);
-      }
-    })
-    .subscribe();
+  let provider;
+  const ydoc = new Y.Doc();
 
   onMount(() => {
+    // Connexion à Realtime
+    provider = createProvider(supabase, "doc", ydoc);
+
+    // Instanciation de l'éditeur (TipTap + Yjs)
     editor = new Editor({
-      element,
-      extensions: [StarterKit],
-      content: "",
-      onUpdate: ({ editor }) => {
-        const html = editor.getHTML();
-        channel.send({
-          type: "broadcast",
-          event: "update",
-          payload: { content: html },
-        });
-      },
+      extensions: [
+        StarterKit,
+        Collaboration.configure({
+          document: ydoc,
+        }),
+        Placeholder.configure({
+          placeholder: "Commence à écrire ici…",
+        }),
+      ],
     });
   });
 
   onDestroy(() => {
     editor?.destroy();
+    provider?.channel?.unsubscribe();
   });
 </script>
+
+{#if editor}
+  <div class="doc-page">
+    <EditorContent {editor} />
+  </div>
+{/if}
 
 <!--{#if editor}
   <div class="control-group">
