@@ -1,12 +1,31 @@
 <script>
   import "./tiptap.scss";
 
+  import { onMount } from "svelte";
+  import { Editor } from "@tiptap/core";
+  import { EditorContent } from "svelte-tiptap";
   import StarterKit from "@tiptap/starter-kit";
   import Collaboration from "@tiptap/extension-collaboration";
   import Placeholder from "@tiptap/extension-placeholder";
-  import { Editor } from "@tiptap/core";
-  import { onMount, onDestroy } from "svelte";
-  import { EditorContent } from "svelte-tiptap";
+  import TextStyle from "@tiptap/extension-text-style";
+  import Color from "@tiptap/extension-color";
+  import TextAlign from "@tiptap/extension-text-align";
+
+  import {
+    Bold,
+    Italic,
+    Underline,
+    AlignLeft,
+    AlignCenter,
+    AlignRight,
+    List,
+    ListOrdered,
+    Highlighter,
+    Undo,
+    Redo,
+    Type,
+    SunMoon,
+  } from "lucide-svelte";
 
   import * as Y from "yjs";
   import { supabase } from "../lib/Supabase.js";
@@ -36,10 +55,12 @@
     return { channel };
   }
 
-  let element;
   let editor;
   let provider;
   const ydoc = new Y.Doc();
+
+  // Toggle dark mode
+  let dark = false;
 
   onMount(() => {
     // Connexion à Realtime
@@ -49,165 +70,141 @@
     editor = new Editor({
       extensions: [
         StarterKit,
+        TextStyle,
+        Color,
+        TextAlign.configure({
+          types: ["heading", "paragraph"],
+        }),
         Collaboration.configure({
           document: ydoc,
         }),
         Placeholder.configure({
-          placeholder: "Commence à écrire ici…",
+          placeholder: "Commencez la saisie ici..",
         }),
       ],
+      content: "",
     });
-  });
 
-  onDestroy(() => {
-    editor?.destroy();
-    provider?.channel?.unsubscribe();
+    return () => {
+      editor?.destroy();
+      provider?.channel?.unsubscribe();
+    };
   });
 </script>
 
 {#if editor}
-  <div class="doc-page">
-    <EditorContent {editor} />
-  </div>
-{/if}
+  <div class="editor-wrapper">
+    <div class="toolbar">
+      <div class="toolbar-group">
+        <!-- Gras -->
+        <button
+          on:click={() => editor.chain().focus().toggleBold().run()}
+          class:active={editor.isActive("bold")}
+        >
+          <Bold size="18" />
+        </button>
 
-<!--{#if editor}
-  <div class="control-group">
-    <div class="button-group">
-      <button
-        on:click={() =>
-          console.log && editor.chain().focus().toggleBold().run()}
-        disabled={!editor.can().chain().focus().toggleBold().run()}
-        class={editor.isActive("bold") ? "is-active" : ""}
-      >
-        Bold
-      </button>
-      <button
-        on:click={() => editor.chain().focus().toggleItalic().run()}
-        disabled={!editor.can().chain().focus().toggleItalic().run()}
-        class={editor.isActive("italic") ? "is-active" : ""}
-      >
-        Italic
-      </button>
-      <button
-        on:click={() => editor.chain().focus().toggleStrike().run()}
-        disabled={!editor.can().chain().focus().toggleStrike().run()}
-        class={editor.isActive("strike") ? "is-active" : ""}
-      >
-        Strike
-      </button>
-      <button
-        on:click={() => editor.chain().focus().toggleCode().run()}
-        disabled={!editor.can().chain().focus().toggleCode().run()}
-        class={editor.isActive("code") ? "is-active" : ""}
-      >
-        Code
-      </button>
-      <button on:click={() => editor.chain().focus().unsetAllMarks().run()}
-        >Clear marks</button
-      >
-      <button on:click={() => editor.chain().focus().clearNodes().run()}
-        >Clear nodes</button
-      >
-      <button
-        on:click={() => editor.chain().focus().setParagraph().run()}
-        class={editor.isActive("paragraph") ? "is-active" : ""}
-      >
-        Paragraph
-      </button>
-      <button
-        on:click={() =>
-          editor.chain().focus().toggleHeading({ level: 1 }).run()}
-        class={editor.isActive("heading", { level: 1 }) ? "is-active" : ""}
-      >
-        H1
-      </button>
-      <button
-        on:click={() =>
-          editor.chain().focus().toggleHeading({ level: 2 }).run()}
-        class={editor.isActive("heading", { level: 2 }) ? "is-active" : ""}
-      >
-        H2
-      </button>
-      <button
-        on:click={() =>
-          editor.chain().focus().toggleHeading({ level: 3 }).run()}
-        class={editor.isActive("heading", { level: 3 }) ? "is-active" : ""}
-      >
-        H3
-      </button>
-      <button
-        on:click={() =>
-          editor.chain().focus().toggleHeading({ level: 4 }).run()}
-        class={editor.isActive("heading", { level: 4 }) ? "is-active" : ""}
-      >
-        H4
-      </button>
-      <button
-        on:click={() =>
-          editor.chain().focus().toggleHeading({ level: 5 }).run()}
-        class={editor.isActive("heading", { level: 5 }) ? "is-active" : ""}
-      >
-        H5
-      </button>
-      <button
-        on:click={() =>
-          editor.chain().focus().toggleHeading({ level: 6 }).run()}
-        class={editor.isActive("heading", { level: 6 }) ? "is-active" : ""}
-      >
-        H6
-      </button>
-      <button
-        on:click={() => editor.chain().focus().toggleBulletList().run()}
-        class={editor.isActive("bulletList") ? "is-active" : ""}
-      >
-        Bullet list
-      </button>
-      <button
-        on:click={() => editor.chain().focus().toggleOrderedList().run()}
-        class={editor.isActive("orderedList") ? "is-active" : ""}
-      >
-        Ordered list
-      </button>
-      <button
-        on:click={() => editor.chain().focus().toggleCodeBlock().run()}
-        class={editor.isActive("codeBlock") ? "is-active" : ""}
-      >
-        Code block
-      </button>
-      <button
-        on:click={() => editor.chain().focus().toggleBlockquote().run()}
-        class={editor.isActive("blockquote") ? "is-active" : ""}
-      >
-        Blockquote
-      </button>
-      <button on:click={() => editor.chain().focus().setHorizontalRule().run()}>
-        Horizontal rule
-      </button>
-      <button on:click={() => editor.chain().focus().setHardBreak().run()}
-        >Hard break</button
-      >
-      <button
-        on:click={() => editor.chain().focus().undo().run()}
-        disabled={!editor.can().chain().focus().undo().run()}
-      >
-        Undo
-      </button>
-      <button
-        on:click={() => editor.chain().focus().redo().run()}
-        disabled={!editor.can().chain().focus().redo().run()}
-      >
-        Redo
-      </button>
-      <button
-        on:click={() => editor.chain().focus().setColor("#958DF1").run()}
-        class={editor.isActive("textStyle", { color: "#958DF1" })
-          ? "is-active"
-          : ""}
-      >
-        Purple
-      </button>
+        <!-- Italique -->
+        <button
+          on:click={() => editor.chain().focus().toggleItalic().run()}
+          class:active={editor.isActive("italic")}
+        >
+          <Italic size="18" />
+        </button>
+
+        <!-- Souligné -->
+        <button
+          on:click={() => editor.chain().focus().toggleUnderline().run()}
+          class:active={editor.isActive("underline")}
+        >
+          <Underline size="18" />
+        </button>
+
+        <!-- Couleur de texte -->
+        <input
+          type="color"
+          on:input={(e) =>
+            editor.chain().focus().setColor(e.target.value).run()}
+        />
+
+        <!-- Surlignage (hack simple) -->
+        <button
+          on:click={() => editor.chain().focus().setColor("yellow").run()}
+        >
+          <Highlighter size="18" />
+        </button>
+
+        <!-- Alignement -->
+        <button
+          on:click={() => editor.chain().focus().setTextAlign("left").run()}
+        >
+          <AlignLeft size="18" />
+        </button>
+
+        <button
+          on:click={() => editor.chain().focus().setTextAlign("center").run()}
+        >
+          <AlignCenter size="18" />
+        </button>
+
+        <button
+          on:click={() => editor.chain().focus().setTextAlign("right").run()}
+        >
+          <AlignRight size="18" />
+        </button>
+
+        <!-- Titres -->
+        <select
+          on:change={(e) => {
+            const lvl = Number(e.target.value);
+            lvl === 0
+              ? editor.chain().focus().setParagraph().run()
+              : editor.chain().focus().toggleHeading({ level: lvl }).run();
+          }}
+        >
+          <option value="0">Paragraphe</option>
+          <option value="1">Titre 1</option>
+          <option value="2">Titre 2</option>
+          <option value="3">Titre 3</option>
+        </select>
+
+        <!-- Listes -->
+        <button
+          on:click={() => editor.chain().focus().toggleBulletList().run()}
+        >
+          <List size="18" />
+        </button>
+
+        <button
+          on:click={() => editor.chain().focus().toggleOrderedList().run()}
+        >
+          <ListOrdered size="18" />
+        </button>
+
+        <!-- Undo / Redo -->
+        <button on:click={() => editor.chain().focus().undo().run()}>
+          <Undo size="18" />
+        </button>
+
+        <button on:click={() => editor.chain().focus().redo().run()}>
+          <Redo size="18" />
+        </button>
+      </div>
+
+      <div class="toolbar-group">
+        <button
+          on:click={() => {
+            dark = !dark;
+            document.body.classList.toggle("dark", dark);
+          }}
+        >
+          <SunMoon size={24} />
+        </button>
+      </div>
+
+      <div class="editor-page">
+        <EditorContent {editor} />
+      </div>
     </div>
   </div>
-{/if}-->
-<div bind:this={element} />
+{/if}
