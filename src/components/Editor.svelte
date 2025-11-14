@@ -23,8 +23,6 @@
     Highlighter,
     Undo,
     Redo,
-    Type,
-    SunMoon,
   } from "lucide-svelte";
 
   import * as Y from "yjs";
@@ -59,9 +57,6 @@
   let provider;
   const ydoc = new Y.Doc();
 
-  // Toggle dark mode
-  let dark = false;
-
   onMount(() => {
     // Connexion à Realtime
     provider = createProvider(supabase, "doc", ydoc);
@@ -93,118 +88,96 @@
 </script>
 
 {#if editor}
-  <div class="editor-wrapper">
+  <div class="editor-container">
     <div class="toolbar">
-      <div class="toolbar-group">
-        <!-- Gras -->
-        <button
-          on:click={() => editor.chain().focus().toggleBold().run()}
-          class:active={editor.isActive("bold")}
-        >
-          <Bold size="18" />
-        </button>
+      <!-- Gras -->
+      <button
+        on:click={() => editor.chain().focus().toggleBold().run()}
+        class:active={editor.isActive("bold")}
+      >
+        <Bold size="18" />
+      </button>
 
-        <!-- Italique -->
-        <button
-          on:click={() => editor.chain().focus().toggleItalic().run()}
-          class:active={editor.isActive("italic")}
-        >
-          <Italic size="18" />
-        </button>
+      <!-- Italique -->
+      <button
+        on:click={() => editor.chain().focus().toggleItalic().run()}
+        class:active={editor.isActive("italic")}
+      >
+        <Italic size="18" />
+      </button>
 
-        <!-- Souligné -->
-        <button
-          on:click={() => editor.chain().focus().toggleUnderline().run()}
-          class:active={editor.isActive("underline")}
-        >
-          <Underline size="18" />
-        </button>
+      <!-- Souligné -->
+      <button
+        on:click={() => editor.chain().focus().toggleUnderline().run()}
+        class:active={editor.isActive("underline")}
+      >
+        <Underline size="18" />
+      </button>
 
-        <!-- Couleur de texte -->
-        <input
-          type="color"
-          on:input={(e) =>
-            editor.chain().focus().setColor(e.target.value).run()}
-        />
+      <!-- Couleur de texte -->
+      <input
+        type="color"
+        on:input={(e) => editor.chain().focus().setColor(e.target.value).run()}
+      />
 
-        <!-- Surlignage (hack simple) -->
-        <button
-          on:click={() => editor.chain().focus().setColor("yellow").run()}
-        >
-          <Highlighter size="18" />
-        </button>
+      <!-- Surlignage (hack simple) -->
+      <button on:click={() => editor.chain().focus().setColor("yellow").run()}>
+        <Highlighter size="18" />
+      </button>
 
-        <!-- Alignement -->
-        <button
-          on:click={() => editor.chain().focus().setTextAlign("left").run()}
-        >
-          <AlignLeft size="18" />
-        </button>
+      <!-- Alignement -->
+      <button
+        on:click={() => editor.chain().focus().setTextAlign("left").run()}
+      >
+        <AlignLeft size="18" />
+      </button>
 
-        <button
-          on:click={() => editor.chain().focus().setTextAlign("center").run()}
-        >
-          <AlignCenter size="18" />
-        </button>
+      <button
+        on:click={() => editor.chain().focus().setTextAlign("center").run()}
+      >
+        <AlignCenter size="18" />
+      </button>
 
-        <button
-          on:click={() => editor.chain().focus().setTextAlign("right").run()}
-        >
-          <AlignRight size="18" />
-        </button>
+      <button
+        on:click={() => editor.chain().focus().setTextAlign("right").run()}
+      >
+        <AlignRight size="18" />
+      </button>
 
-        <!-- Titres -->
-        <select
-          on:change={(e) => {
-            const lvl = Number(e.target.value);
-            lvl === 0
-              ? editor.chain().focus().setParagraph().run()
-              : editor.chain().focus().toggleHeading({ level: lvl }).run();
-          }}
-        >
-          <option value="0">Paragraphe</option>
-          <option value="1">Titre 1</option>
-          <option value="2">Titre 2</option>
-          <option value="3">Titre 3</option>
-        </select>
+      <!-- Titres -->
+      <select
+        on:change={(e) => {
+          const lvl = Number(e.target.value);
+          lvl === 0
+            ? editor.chain().focus().setParagraph().run()
+            : editor.chain().focus().toggleHeading({ level: lvl }).run();
+        }}
+      >
+        <option value="0">Paragraphe</option>
+        <option value="1">Titre 1</option>
+        <option value="2">Titre 2</option>
+        <option value="3">Titre 3</option>
+      </select>
 
-        <!-- Listes -->
-        <button
-          on:click={() => editor.chain().focus().toggleBulletList().run()}
-        >
-          <List size="18" />
-        </button>
+      <!-- Listes -->
+      <button on:click={() => editor.chain().focus().toggleBulletList().run()}>
+        <List size="18" />
+      </button>
 
-        <button
-          on:click={() => editor.chain().focus().toggleOrderedList().run()}
-        >
-          <ListOrdered size="18" />
-        </button>
+      <button on:click={() => editor.chain().focus().toggleOrderedList().run()}>
+        <ListOrdered size="18" />
+      </button>
 
-        <!-- Undo / Redo -->
-        <button on:click={() => editor.chain().focus().undo().run()}>
-          <Undo size="18" />
-        </button>
+      <!-- Undo / Redo -->
+      <button on:click={() => editor.chain().focus().undo().run()}>
+        <Undo size="18" />
+      </button>
 
-        <button on:click={() => editor.chain().focus().redo().run()}>
-          <Redo size="18" />
-        </button>
-      </div>
-
-      <div class="toolbar-group">
-        <button
-          on:click={() => {
-            dark = !dark;
-            document.body.classList.toggle("dark", dark);
-          }}
-        >
-          <SunMoon size={24} />
-        </button>
-      </div>
-
-      <div class="editor-page">
-        <EditorContent {editor} />
-      </div>
+      <button on:click={() => editor.chain().focus().redo().run()}>
+        <Redo size="18" />
+      </button>
     </div>
+
+    <EditorContent {editor} />
   </div>
 {/if}
