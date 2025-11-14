@@ -1,46 +1,58 @@
 .editor-container {
-    display: flex;
-    flex-direction: column;
-    max-width: 800px;
-    margin: 2rem auto;
-  }
+  display: flex;
+  flex-direction: column;
+  max-width: 800px;
+  margin: 2rem auto;
+}
 
-  .toolbar {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 8px;
-    background: #f7f7f7;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 4px;
-  }
+.toolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  background: #f7f7f7;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 4px;
+}
 
-  .toolbar button {
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    padding: 6px;
-    border-radius: 4px;
-  }
+.toolbar button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+}
 
-  .toolbar button:hover {
-    background: #eee;
-  }
+.toolbar button:hover {
+  background: #eee;
+}
 
-  .toolbar button.active {
-    background: #ddd;
-  }
+.toolbar button.active {
+  background: #ddd;
+}
 
-  .ProseMirror {
-    min-height: 400px;
-    padding: 1rem;
-    outline: none;
-  }
+.ProseMirror {
+  min-height: 400px;
+  padding: 1rem;
+  outline: none;
+}
 
-  .ProseMirror p.is-empty:first-child::before {
-    content: attr(data-placeholder);
-    color: #aaa;
-    float: left;
-    height: 0;
-    pointer-events: none;
-  }
+.ProseMirror p.is-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: #aaa;
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.cursor-label {
+  position: absolute;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: white;
+  font-weight: bold;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0.9;
+}
