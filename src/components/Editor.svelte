@@ -27,6 +27,7 @@
 
   import * as Y from "yjs";
   import { supabase } from "../lib/Supabase.js";
+  import { writable } from "svelte/store";
 
   export let user;
 
@@ -34,8 +35,10 @@
   let provider;
   const ydoc = new Y.Doc();
 
+  const editorState = writable(null);
+
   // Stocke les cursors des autres utilisateurs
-  let remoteCursors = {};
+  const remoteCursors = writable({});
 
   function createProvider(supabase, roomName, ydoc) {
     // Abonnement realtime
@@ -85,6 +88,9 @@
         }),
       ],
       content: "",
+      onTransaction: ({ editor }) => {
+        editorState.set(editor);
+      },
     });
 
     // Envoi de la sélection locale
@@ -105,10 +111,12 @@
     // Réception des cursors des autres utilisateurs
     channel.on("broadcast", { event: "cursor" }, ({ payload }) => {
       const { clientId, color, head } = payload;
-      if (clientId === user.firstname) return; // ignore soi-même
+      if (clientId === user.firstname) return;
 
-      // Met à jour ou ajoute le cursor
-      remoteCursors[clientId] = { color, head };
+      remoteCursors.update((cursors) => ({
+        ...cursors,
+        [clientId]: { color, head },
+      }));
     });
 
     return () => {
@@ -121,7 +129,6 @@
   function getCursorCoords(pos) {
     if (!editor || pos == null) return { left: 0, top: 0 };
 
-    // Clamp la position entre 0 et la taille du document
     const clampedPos = Math.min(
       Math.max(pos, 0),
       editor.state.doc.content.size
@@ -140,7 +147,7 @@
       <!-- Gras -->
       <button
         on:click={() => editor.chain().focus().toggleBold().run()}
-        class:active={editor.isActive("bold")}
+        class:active={$editorState?.isActive("bold")}
       >
         <Bold size="18" />
       </button>
@@ -148,7 +155,7 @@
       <!-- Italique -->
       <button
         on:click={() => editor.chain().focus().toggleItalic().run()}
-        class:active={editor.isActive("italic")}
+        class:active={$editorState?.isActive("italic")}
       >
         <Italic size="18" />
       </button>
@@ -156,10 +163,29 @@
       <!-- Souligné -->
       <button
         on:click={() => editor.chain().focus().toggleUnderline().run()}
-        class:active={editor.isActive("underline")}
+        class:active={$editorState?.isActive("underline")}
       >
         <UnderlineIcon size="18" />
       </button>
+
+      <div class="separator" />
+
+      <!-- Titres -->
+      <select
+        on:change={(e) => {
+          const lvl = Number(e.target.value);
+          lvl === 0
+            ? editor.chain().focus().setParagraph().run()
+            : editor.chain().focus().toggleHeading({ level: lvl }).run();
+        }}
+      >
+        <option value="0">Paragraphe</option>
+        <option value="1">Titre 1</option>
+        <option value="2">Titre 2</option>
+        <option value="3">Titre 3</option>
+      </select>
+
+      <div class="separator" />
 
       <!-- Alignement -->
       <button
@@ -180,20 +206,7 @@
         <AlignRight size="18" />
       </button>
 
-      <!-- Titres -->
-      <select
-        on:change={(e) => {
-          const lvl = Number(e.target.value);
-          lvl === 0
-            ? editor.chain().focus().setParagraph().run()
-            : editor.chain().focus().toggleHeading({ level: lvl }).run();
-        }}
-      >
-        <option value="0">Paragraphe</option>
-        <option value="1">Titre 1</option>
-        <option value="2">Titre 2</option>
-        <option value="3">Titre 3</option>
-      </select>
+      <div class="separator" />
 
       <!-- Listes -->
       <button on:click={() => editor.chain().focus().toggleBulletList().run()}>
@@ -203,6 +216,8 @@
       <button on:click={() => editor.chain().focus().toggleOrderedList().run()}>
         <ListOrdered size="18" />
       </button>
+
+      <div class="separator" />
 
       <!-- Undo / Redo -->
       <button on:click={() => editor.chain().focus().undo().run()}>
@@ -222,8 +237,7 @@
           class="cursor-label"
           style="
             left: {getCursorCoords(c.head).left}px;
-            top: {getCursorCoords(c.head).top -
-            20}px; /* un peu au-dessus du curseur */
+            top: {getCursorCoords(c.head).top - 20}px;
             background-color: {c.color};
           "
         >

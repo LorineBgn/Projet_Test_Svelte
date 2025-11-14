@@ -1,40 +1,62 @@
-.editor-container {
+body {
   display: flex;
-  flex-direction: column;
-  max-width: 800px;
-  margin: 2rem auto;
+  justify-content: center;
+  align-items: center;
+  background-color: #fff6e8; 
+}
+
+.editor-container {
+  width: 50vw;
+  background-color: #f8e7cb;
+  padding: 32px;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+.tiptap {
+  border: 1px solid gray;
+  background-color: #ffffffb2;
+  border-radius: 2px;
 }
 
 .toolbar {
   display: flex;
-  gap: 8px;
+  flex-wrap: wrap;
+  padding-top: 8px;
+  padding-left: 8px;
   margin-bottom: 8px;
-  background: #f7f7f7;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 4px;
+  background: #ffffffe1;
+  border: 1px solid gray;
+  border-radius: 2px;
 }
 
 .toolbar button {
   border: none;
   background: transparent;
   cursor: pointer;
-  padding: 6px;
   border-radius: 4px;
+  line-height: 0;
+  align-items: center;
+  margin-right: 2px;
+}
+
+.toolbar button svg {
+  display: block;
 }
 
 .toolbar button:hover {
-  background: #eee;
+  background: #9c9c9c;
 }
 
 .toolbar button.active {
-  background: #ddd;
+  background: #b7b7b7;
 }
 
 .ProseMirror {
   min-height: 400px;
-  padding: 1rem;
   outline: none;
+  padding-left: 8px;
+  padding-right: 8px;
 }
 
 .ProseMirror p.is-empty:first-child::before {
@@ -55,4 +77,13 @@
   white-space: nowrap;
   pointer-events: none;
   opacity: 0.9;
+}
+
+.separator {
+  width: 1px;
+  background: #ddd;
+  margin: 0 8px;
+  align-self: stretch;
+  opacity: 0.8;
+  margin-bottom: 8px;
 }
