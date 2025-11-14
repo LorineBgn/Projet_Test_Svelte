@@ -1,5 +1,5 @@
 <script>
-  import "./tiptap.scss";
+  import "../styles/tiptap.scss";
 
   import { onMount } from "svelte";
   import { Editor } from "@tiptap/core";

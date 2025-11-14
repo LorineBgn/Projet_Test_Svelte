@@ -12,7 +12,7 @@
 
 <div class="login-box">
   <h2>Bienvenue !</h2>
-  <p>Entrez votre prénom pour rejoindre l’édition collaborative :</p>
+  <p>Entrez votre prénom pour rejoindre le document :</p>
 
   <input
     bind:value={firstname}
